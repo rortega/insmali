@@ -1,4 +1,7 @@
 import re
+import argparse
+
+
 
 class Inject:
 	def __init__(self, location, text):
@@ -53,51 +56,119 @@ class Method:
 		str = str.replace('<parameter_name>',parameter_name)
 		return str
 
-file = open('/users/rortega/desktop/sample.smali','r')
-content = file.read()
+
+class Utilities:
+	# Common seperator line for the application
+	seperator_single_line = '------------------------------------------------------------'
+	seperator_double_line = '============================================================'
+
+	red_color = '\033[1;31m'
+	blue_color = '\033[34m'
+	green_color = '\033[1;32m'
+	purple_color = '\033[35m'
+	end_color = '\033[0m'
+
+	def print_color(self,text,color):
+		if color == 'red':
+			print (self.red_color + text + self.end_color)
+		if color == 'blue':
+			print (self.blue_color + text + self.end_color)
+		if color == 'purple':
+			print (self.purple_color + text + self.end_color)
+		if color == 'green':
+			print (self.green_color + text + self.end_color)
+
+	def read_file(self,file_name):
+		return_file_content = ''
+		try:
+			file = open(file_name,'r')
+			return_file_content = file.read()
+			file.close()
+		except Exception as e:
+			self.print_color('[!] Error: Cannot open the file: ' +file_name ,'red')
+			self.print_color(str(e),'red')
+		return return_file_content
+
+	def save_file(self,file_name):
+		return_file_content = ''
+		try:
+			file = open(file_name,'w')
+			return_file_content = file.read()
+			file.close()
+		except Exception as e:
+			self.print_color('[!] Error: Cannot open the file: ' +file_name ,'red')
+			self.print_color(str(e),'red')
+		return return_file_content
+
+	def __init__(self):
+		self.name = 'static class'
+
+class Core:
+	ip_address = ''
+	current_test = ''
+	url = ''
 
 
-original = content.split('\n');
-splitdoc = content.split('\n');
+class Main:
+	def __init__(self,utilities):
+		global args
+		print 'Start'
+		parser = argparse.ArgumentParser('File Reader')
+		parser.add_argument("-if","--file",type=str,help="File path to SMALI file")
+		parser.add_argument("-of","--output_file",type=str,help="Output file of injected SMALI file")
+		args = parser.parse_args()
 
-method = ""
-insert_array = []
+	def _process_smali_file(self):
+		smali_content = utilities.read_file(args.file)
+		original = smali_content.split('\n');
+		splitdoc = smali_content.split('\n');
+		method = ""
+		insert_array = []
+		counter = 0
+		for line in splitdoc:
+			if ".method" in line:
+				method +=  str(counter) + '-'
+			if ".end method" in line:
+				method += str(counter) + ','
+			counter += 1
+		#print method
+		method_list = []
+		for m in method.split(','):
+			if m:
+				loc= m.split("-")
+				st = int(loc[0])
+				en = int(loc[1])
+				method_list.append( Method(st,en, splitdoc[st:en] ))
+		for method in method_list:
+			prologue_counter = 0;
+			for i in method.array:
+				prologue_counter += 1;
+				if ".prologue" in i:
+					insert_array.append(Inject(prologue_counter + method.start -1, method.get_param()))
+		orcounter = 0;
+		with open("/users/rortega/desktop/output.smali","w") as file:
+			for line in original:
+				for insert in insert_array:
+					if orcounter == insert.location:
+						file.write(insert.text + '\n')
 
-counter = 0
-for line in splitdoc:
-	if ".method" in line:
-		method +=  str(counter) + '-'
-	if ".end method" in line:
-		method += str(counter) + ','
-	counter += 1
-print method
+				file.write(line + "\n")
+				orcounter +=1
+			file.close()
+			print("filesaved...")
 
-method_list = []
-for m in method.split(','):
-	if m:
-		loc= m.split("-")
-		st = int(loc[0])
-		en = int(loc[1])
-		method_list.append( Method(st,en, splitdoc[st:en] ))
+	def start(self):
+		try:
+			# Print application banner
+			self._process_smali_file()
+		except KeyboardInterrupt:
+			print "Exiting Application ..."
+			exit(0)
+		except Exception,e:
+			print str(e)
+			exit(0)
 
-
-for method in method_list:
-	prologue_counter = 0;
-	for i in method.array:
-		prologue_counter += 1;
-		if ".prologue" in i:
-			insert_array.append(Inject(prologue_counter + method.start -1, method.get_param()))
-
-
-orcounter = 0;
-with open("/users/rortega/desktop/tmp.txt","w") as file:
-	for line in original:
-
-		for insert in insert_array:
-			if orcounter == insert.location:
-				file.write(insert.text + '\n')
-
-		file.write(line + "\n")
-		orcounter +=1
-	file.close()
-	print("filesaved...")
+if __name__ == '__main__':
+	utilities = Utilities()
+	main = Main(utilities)
+	main.start()
