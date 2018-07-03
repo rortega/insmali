@@ -18,7 +18,7 @@ class Method:
 		self.end = end
 		self.array = linearray
 
-	def get_param(self):
+	def get_param(self, original_smali):
 		param_array =[]
 		ret_string = ''
 		for element in self.array:
@@ -31,29 +31,35 @@ class Method:
 					param_array.append(Param(name,value))
 			if '.prologue' in element:
 				break
-
 		method_name = self.array[0].replace('\"','').replace('\'','')
-		method_name = method_name[:method_name.find('(')]
+		method_name = method_name[method_name.rfind(' '):method_name.find('(')]
+		class_name = original_smali[0][original_smali[0].rfind('/')+1:original_smali[0].find(';')]
 
 		if not param_array:
-			ret_string += self.get_inject_string('v0',method_name)
+			print("xxxxx" +self.array[1])
+			if '.locals 0' in self.array[1]:
+				ret_string += '###.locals 0### not injected' #has .locals 0
+			else:
+				ret_string += self.get_inject_string(method_name,'v0',class_name)
 		else:
 			for i in param_array:
-				ret_string+=self.get_inject_string(i.name.replace(' ',''),method_name+'->'+i.value)
+				ret_string+=self.get_inject_string(method_name+'<--'+i.value,i.name.replace(' ',''), class_name)
 		return ret_string
 
 	def get_name(self):
 		self.get_param()
 		return self.array[0][8:self.array[0].find('()')]
 
-	def get_inject_string(self,method_name,parameter_name):
+	def get_inject_string(self,method_name,parameter_name,class_name):
+		method_name = method_name.replace(' ','')
 		str = ""
-		str += '################INJECT_SMALI\n'
-		str += 'const-string v0, "<parameter_name>"\n'
-		str += 'invoke-static {v0, <method_name>}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;)I\n'
+		str += '#################INJECT_SMALI\n'
+		str += 'const-string v0, "<class_name>.<method_name>"\n'
+		str += 'invoke-static {v0, <parameter_name>}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;)I\n'
 		str += '################END_INJECT\n'
 		str = str.replace('<method_name>', method_name)
 		str = str.replace('<parameter_name>',parameter_name)
+		str = str.replace('<class_name>',class_name)
 		return str
 
 
@@ -123,6 +129,7 @@ class Main:
 				method += str(counter) + ','
 			counter += 1
 		#print method
+
 		method_list = []
 		for m in method.split(','):
 			if m:
@@ -135,9 +142,9 @@ class Main:
 			for i in method.array:
 				prologue_counter += 1;
 				if ".prologue" in i:
-					insert_array.append(Inject(prologue_counter + method.start -1, method.get_param()))
+					insert_array.append(Inject(prologue_counter + method.start -1, method.get_param(original)))
 		orcounter = 0;
-		with open("./output.smali","w") as file:
+		with open("/users/rortega/Desktop/output.smali","w") as file:
 			for line in original:
 
 				for insert in insert_array:
