@@ -27,7 +27,6 @@ class Method:
 					start = element.find('.param')
 					name = element[start + 7:element.find(',')]
 					value = element[element.find(',')+1:element.find('#')].replace('\"','')
-					print(name + '-' + value)
 					param_array.append(Param(name,value))
 			if '.prologue' in element:
 				break
@@ -36,7 +35,6 @@ class Method:
 		class_name = original_smali[0][original_smali[0].rfind('/')+1:original_smali[0].find(';')]
 
 		if not param_array:
-			print("xxxxx" +self.array[1])
 			if '.locals 0' in self.array[1]:
 				ret_string += '###.locals 0### not injected' #has .locals 0
 			else:
@@ -94,6 +92,22 @@ class Utilities:
 			self.print_color('[!] Error: Cannot open the file: ' +file_name ,'red')
 			self.print_color(str(e),'red')
 		return return_file_content
+	def write_smali_file(self,file_name, original, insert_array):
+		if file_name:
+			self.print_color('[+] Writing file at location: ' +file_name ,'green')
+		else:
+			file_name = "./output.smali"
+			self.print_color('[+] Writing file to default location: ' +file_name ,'green')
+		orcounter = 0;
+		with open(file_name,"w") as file:
+			for line in original:
+				for insert in insert_array:
+					if orcounter == insert.location:
+						file.write(insert.text + '\n')
+				file.write(line + "\n")
+				orcounter +=1
+			file.close()
+
 
 	def __init__(self):
 		self.name = 'static class'
@@ -111,8 +125,8 @@ class Main:
 		parser = argparse.ArgumentParser('File Reader')
 		parser.add_argument("-if","--file",type=str,help="File path to SMALI file")
 		parser.add_argument("-of","--output_file",type=str,help="Output file of injected SMALI file")
+		parser.add_argument("-cs","--compile_sign",type=str,help="Compile/Sign the target SMALI source")
 		args = parser.parse_args()
-
 
 
 	def _process_smali_file(self):
@@ -128,7 +142,6 @@ class Main:
 			if ".end method" in line:
 				method += str(counter) + ','
 			counter += 1
-		#print method
 
 		method_list = []
 		for m in method.split(','):
@@ -138,29 +151,24 @@ class Main:
 				en = int(loc[1])
 				method_list.append( Method(st,en, splitdoc[st:en] ))
 		for method in method_list:
+			utilities.print_color('[->] ' +method.array[0] ,'green')
 			prologue_counter = 0;
 			for i in method.array:
 				prologue_counter += 1;
 				if ".prologue" in i:
 					insert_array.append(Inject(prologue_counter + method.start -1, method.get_param(original)))
 		orcounter = 0;
-		with open("/users/rortega/Desktop/output.smali","w") as file:
-			for line in original:
-
-				for insert in insert_array:
-					if orcounter == insert.location:
-						file.write(insert.text + '\n')
-
-				file.write(line + "\n")
-				orcounter +=1
-			file.close()
-			print("filesaved...")
-
+		utilities.write_smali_file(args.output_file, original, insert_array)
 
 	def start(self):
 		try:
 			# Print application banner
-			self._process_smali_file()
+			if args.file:
+				self._process_smali_file()
+			elif args.compile_sign:
+				utilities.print_color('[+] Compiling an','blue')
+
+
 		except KeyboardInterrupt:
 			print "Exiting Application ..."
 			exit(0)
