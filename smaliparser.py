@@ -68,6 +68,7 @@ class Utilities:
 	# Common seperator line for the application
 	seperator_single_line = '------------------------------------------------------------'
 	seperator_double_line = '============================================================'
+	#python smaliparser.py -cs c
 
 	red_color = '\033[1;31m'
 	blue_color = '\033[34m'
@@ -97,10 +98,10 @@ class Utilities:
 		return return_file_content
 	def write_smali_file(self,file_name, original, insert_array):
 		if file_name:
-			self.print_color('(+) Writing file at location: ' +file_name ,'green')
+			self.print_color('(+) Writing file at location: ' +file_name ,'blue')
 		else:
 			file_name = "./output.smali"
-			self.print_color('(+) Writing file to default location: ' +file_name ,'green')
+			self.print_color('(+) Writing file to default location: ' +file_name ,'blue')
 		orcounter = 0;
 		with open(file_name,"w") as file:
 			for line in original:
@@ -110,6 +111,12 @@ class Utilities:
 				file.write(line + "\n")
 				orcounter +=1
 			file.close()
+		self.print_color('(+) Completed Writing file to location: ' +file_name ,'blue')
+
+
+
+
+
 	def compile_smali_path(self):
 		print "(-0-) Building the injected SMALI"
 		command = ["apktool", "--version"]
@@ -135,10 +142,6 @@ class Utilities:
 		p = subprocess.Popen(install_command, stdout=subprocess.PIPE)
 		response = p.communicate()[0]
 		self.print_color("(+) " + response,'blue')
-
-
-
-
 
 
 
@@ -194,7 +197,12 @@ class Main:
 				if ".prologue" in i:
 					insert_array.append(Inject(prologue_counter + method.start -1, method.get_param(original)))
 		orcounter = 0;
-		utilities.write_smali_file(args.output_file, original, insert_array)
+		print args.file
+		if 'same' in args.output_file:
+			utilities.write_smali_file(args.file, original, insert_array)
+		else:
+			utilities.write_smali_file(args.output_file, original, insert_array)
+
 
 	def start(self):
 		try:
