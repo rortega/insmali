@@ -1,9 +1,14 @@
 # insmali
-insmali will inject an existing SMALI file with Log methods. This can be used for debugging and profiling an existing android application.This shell script is provided as-is without warranty of any kind and is intended for educational purposes only
+insmali will inject an existing SMALI file with Log methods. This can be used for debugging and profiling an existing android application.This shell script is provided as-is without warranty of any kind and is intended for educational purposes only.
 
+To use, point to a SMALI file:
+    
+    
+    $python smaliparser.py -if ./path/to/SecureSharedPreferences.smali -of same
 
-$python smaliparser.py -cs c
-$python smaliparser.py -if ./path/to/SecureSharedPreferences.smali -of same
+You can then compile/sign the code by using apktool/jarsigner or run the following:
+
+    $python smaliparser.py -cs c
 
 For instance, consider the method used to encrypt shared preference:
 
