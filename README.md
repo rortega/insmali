@@ -5,7 +5,7 @@ insmali will inject an existing SMALI file with Log methods. This can be used fo
 $python smaliparser.py -cs c
 $python smaliparser.py -if ./path/to/SecureSharedPreferences.smali -of same
 
-For instance, consider the code used to encrypt shared preference:
+For instance, consider the method used to encrypt shared preference:
 
     method protected encrypt(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
     .locals 9
