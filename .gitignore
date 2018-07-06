@@ -1,3 +1,5 @@
 /dep
 /smali
 output.smali
+/output.smali
+/test.file
