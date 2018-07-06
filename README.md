@@ -1,11 +1,11 @@
 # insmali
 insmali will inject an existing SMALI file with Log methods. This can be used for debugging and profiling an existing android application.This shell script is provided as-is without warranty of any kind and is intended for educational purposes only
 
+    
+    $python smaliparser.py -if ./path/to/SecureSharedPreferences.smali -of same
 
-$python smaliparser.py -cs c
-$python smaliparser.py -if ./path/to/SecureSharedPreferences.smali -of same
 
-For instance, consider the code used to encrypt shared preference:
+For instance, consider the method used to encrypt shared preference:
 
     method protected encrypt(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
     .locals 9
@@ -36,7 +36,11 @@ For instance, consider the code used to encrypt shared preference:
     .line 191
     if-eqz p1, :cond_0
 
+<<<<<<< HEAD
 Once injected, you can view the logs in logcat:
+=======
+Once injected, you can view (logcat) the parameters passed to the encrypt method as shown below:
+>>>>>>> b65c434d4b748b74c1e1f8f1a9d77e631f9aa56e
 
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--value: true
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--name: IS_PHONE
