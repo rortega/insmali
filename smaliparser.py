@@ -26,7 +26,7 @@ class Method:
 		ret_string = ''
 		for element in self.array:
 			if '.param p' in element:
-				if 'java/lang/String' in element:
+				if 'java/lang/String;' in element:
 					start = element.find('.param')
 					name = element[start + 7:element.find(',')]
 					value = element[element.find(',')+1:element.find('#')].replace('\"','')
@@ -68,7 +68,7 @@ class Utilities:
 	# Common seperator line for the application
 	seperator_single_line = '------------------------------------------------------------'
 	seperator_double_line = '============================================================'
-	#python smaliparser.py -cs c
+
 
 	red_color = '\033[1;31m'
 	blue_color = '\033[34m'
@@ -118,6 +118,8 @@ class Utilities:
 
 
 	def compile_smali_path(self):
+		path_to_inapk = "./smali/base/dist/base.apk"
+		path_to_base = "./smali/base/"
 		print "(-0-) Building the injected SMALI"
 		command = ["apktool", "--version"]
 		p = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -125,15 +127,19 @@ class Utilities:
 		if '.' not in sub_response:
 			self.print_color('(!) APKTOOL Was not found, INSTALL APKTOOL 2 AND ADD TO PATH ' ,'red')
 			sys.exit()
-		build_command =  ["apktool","b","./smali/base/"]
-		stringJarSignerCommand=["jarsigner", "-keystore", "./sign/debug.keystore", "./smali/base/dist/base.apk", "signkey", "-sigalg", "MD5withRSA", "-digestalg", "SHA1"]
+
+		build_command =  ["apktool","b",path_to_base]
 		self.print_color("(*) EXECUTING APKTOOL BUILD COMMAND..." ,'blue')
+		self.print_color('(+) Building the following path: ' + path_to_base ,'blue')
 		p = subprocess.Popen(build_command, stdout=subprocess.PIPE)
 		build_result = p.communicate()[0]
+		print build_result
+
 		if "Exception" in build_result:
 			self.print_color("Exception:"+build_result ,'red')
 			exit(0)
 		self.print_color("(*)  Enter 'password' to sign..." ,'blue')
+		stringJarSignerCommand=["jarsigner", "-keystore", "./sign/debug.keystore", path_to_inapk, "signkey", "-sigalg", "MD5withRSA", "-digestalg", "SHA1"]
 		p = subprocess.Popen(stringJarSignerCommand, stdout=subprocess.PIPE)
 		jarsignerResult = p.communicate()[0]
 		print jarsignerResult
@@ -141,11 +147,8 @@ class Utilities:
 		install_command=["adb", "install", "-r", "./smali/base/dist/base.apk"]
 		p = subprocess.Popen(install_command, stdout=subprocess.PIPE)
 		response = p.communicate()[0]
+		print response
 		self.print_color("(+) " + response,'blue')
-
-
-
-
 
 
 	def __init__(self):

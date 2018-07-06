@@ -37,6 +37,7 @@ For instance, consider the code used to encrypt shared preference:
     if-eqz p1, :cond_0
 
 Once injected, you can view the logs in logcat:
+
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--value: true
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--name: IS_PHONE
      07-04 13:13:35.548 17175-17175/? E/SecureSharedPreferences.getString<--key: URL
