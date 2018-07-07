@@ -41,11 +41,7 @@ For instance, consider the method used to encrypt shared preference:
     .line 191
     if-eqz p1, :cond_0
 
-<<<<<<< HEAD
-Once injected, you can view the logs in logcat:
-=======
 Once injected, you can view (logcat) the parameters passed to the encrypt method as shown below:
->>>>>>> b65c434d4b748b74c1e1f8f1a9d77e631f9aa56e
 
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--value: true
      07-04 13:13:35.508 17175-17175/? E/SecureSharedPreferences.encrypt<--name: IS_PHONE
