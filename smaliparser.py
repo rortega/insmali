@@ -37,14 +37,14 @@ class Method:
 		method_name = method_name[method_name.rfind(' '):method_name.find('(')]
 		class_name = original_smali[0][original_smali[0].rfind('/')+1:original_smali[0].find(';')]
 
-		if not param_array:
-			if '.locals 0' in self.array[1]:
-				ret_string += '###.locals 0### not injected' #has .locals 0
-			else:
-				ret_string += self.get_inject_string(method_name,'v0',class_name)
+		if '.locals 0' in self.array[1]:
+			ret_string += '###.locals 0### not injected' #has .locals 0  - do nothing at the moment
 		else:
-			for i in param_array:
-				ret_string+=self.get_inject_string(method_name+'<--'+i.value,i.name.replace(' ',''), class_name)
+			if not param_array:# Method does not have any paramters passed
+				ret_string += self.get_inject_string(method_name,'v0',class_name)
+			else:
+				for i in param_array:# for the moment, will only print java.lang.String objects
+					ret_string+=self.get_inject_string(method_name+'<--'+i.value,i.name.replace(' ',''), class_name)
 		return ret_string
 
 	def get_name(self):
@@ -166,7 +166,7 @@ class Main:
 		print 'Start'
 		parser = argparse.ArgumentParser('File Reader')
 		parser.add_argument("-if","--file",type=str,help="File path to SMALI file")
-		parser.add_argument("-of","--output_file",type=str,help="Output file of injected SMALI file")
+		parser.add_argument("-of","--output_file",type=str,help="Output file of injected SMALI file. Use the arvument '-of same' to inject the file provided in the '-if' argument ")
 		parser.add_argument("-cs","--compile_sign",type=str,help="Compile/Sign the target SMALI source")
 		args = parser.parse_args()
 
